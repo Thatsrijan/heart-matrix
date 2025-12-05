@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Heart Matrix 💗</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --rose:#f97373;
+  --rose-soft:#fda4af;
+  --close-bg:#111827;
+}
+
+/* 🌈 Dynamic background: gold, silver, black */
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  background:radial-gradient(circle at top,
+    #facc15,
+    #e5e7eb,
+    #020617,
+    #0b1120);
+  background-size:400% 400%;
+  animation:bgShift 12s cubic-bezier(0.22,1,0.36,1) infinite;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:16px;
+  color:#e5e7eb;
+}
+@keyframes bgShift{
+  0%  {background-position:0% 50%}
+  25% {background-position:50% 0%}
+  50% {background-position:100% 50%}
+  75% {background-position:50% 100%}
+  100%{background-position:0% 50%}
+}
+
+/* Main card */
+.app{
+  width:100%;
+  max-width:430px;
+  border-radius:22px;
+  padding:22px;
+  background:rgba(3,7,18,0.82);
+  border:1px solid rgba(248,250,252,0.06);
+  box-shadow:0 22px 55px rgba(0,0,0,0.78);
+  backdrop-filter:blur(16px);
+  opacity:0;
+  transform:translateY(28px);
+  animation:cardIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes cardIn{
+  to{opacity:1;transform:translateY(0)}
+}
+
+.hidden{display:none}
+
+/* Intro */
+.intro-title{
+  font-size:26px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+.intro-sub{
+  font-size:14px;
+  opacity:0.86;
+}
+
+/* Primary buttons (Enter / Send) */
+.btn{
+  margin-top:14px;
+  background:linear-gradient(135deg,#facc15,#f97316);
+  color:#020617;
+  padding:11px 22px;
+  border-radius:999px;
+  border:none;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 14px 30px rgba(250,204,21,0.40);
+  transition:0.18s;
+}
+.btn:hover{
+  transform:translateY(-1px) scale(1.02);
+}
+.btn:active{
+  transform:scale(0.96);
+}
+
+/* Option buttons – gradient black & gold */
+.btn-option{
+  margin-top:10px;
+  background:linear-gradient(135deg,#020617,#facc15);
+  color:#fefce8;
+  padding:9px 18px;
+  border-radius:999px;
+  border:none;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(15,23,42,0.6);
+  transition:0.18s;
+}
+.btn-option:hover{
+  transform:translateY(-1px) scale(1.02);
+}
+.btn-option:active{
+  transform:scale(0.96);
+}
+
+/* darker close button */
+.btn-secondary{
+  margin-top:14px;
+  background:var(--close-bg);
+  color:#e5e7eb;
+  padding:9px 18px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.7);
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:0.15s;
+}
+.btn-secondary:hover{
+  background:#020617;
+  transform:translateY(-1px);
+}
+.btn-secondary:active{
+  transform:scale(0.96);
+}
+
+/* Meter */
+.meter{
+  font-size:13px;
+  margin-bottom:6px;
+}
+.meter-bar{
+  height:8px;
+  border-radius:999px;
+  background:#020617;
+  overflow:hidden;
+}
+.meter-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#facc15,#f97316);
+  transition:width 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* Grid */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+.tile{
+  aspect-ratio:1/1;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,0.4);
+  background:radial-gradient(circle at top,rgba(248,250,252,0.12),rgba(15,23,42,0.97));
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:22px;
+  cursor:pointer;
+  overflow:hidden;
+  position:relative;
+  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),
+             box-shadow 0.3s, border-color 0.3s, background 0.3s;
+  transform-style:preserve-3d;
+}
+.tile span{
+  transition:opacity 0.25s;
+}
+
+/* visually opened / flipped */
+.tile.opened{
+  transform:rotateY(180deg) scale(0.98);
+  box-shadow:0 10px 26px rgba(0,0,0,0.6);
+  background:radial-gradient(circle at bottom,#020617,#0f172a);
+}
+.tile.opened span{
+  opacity:0.65;
+}
+
+/* locked visual */
+.tile.locked::before{
+  content:"🔒";
+  position:absolute;
+  font-size:20px;
+  opacity:0.75;
+}
+.tile.locked span{
+  opacity:0.15;
+}
+.tile:active::after{
+  content:"";
+  position:absolute;
+  width:72px;
+  height:72px;
+  background:rgba(255,255,255,0.25);
+  border-radius:50%;
+  animation:ripple 0.35s ease-out forwards;
+}
+@keyframes ripple{
+  from{transform:scale(0);opacity:0.6}
+  to{transform:scale(3);opacity:0}
+}
+
+/* Modal */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.72);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:16px;
+}
+.modal{
+  width:100%;
+  max-width:430px;
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,0.6);
+  background:rgba(15,23,42,0.97);
+  box-shadow:0 22px 50px rgba(0,0,0,0.75);
+  padding:18px;
+  animation:modalIn 0.4s cubic-bezier(0.22,1,0.36,1);
+  max-height:85vh;
+  display:flex;
+  flex-direction:column;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(24px) scale(0.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.modal-title{
+  font-size:18px;
+  font-weight:600;
+}
+.modal-text{
+  font-size:14px;
+  opacity:0.9;
+  margin-top:6px;
+}
+
+/* scrollable content */
+.modal-text,
+.final-msg,
+#mDynamic{
+  overflow-y:auto;
+  max-height:55vh;
+  padding-right:6px;
+}
+.modal-text::-webkit-scrollbar,
+.final-msg::-webkit-scrollbar,
+#mDynamic::-webkit-scrollbar{
+  width:4px;
+}
+.modal-text::-webkit-scrollbar-thumb,
+.final-msg::-webkit-scrollbar-thumb,
+#mDynamic::-webkit-scrollbar-thumb{
+  background:rgba(250,204,21,0.5);
+  border-radius:4px;
+}
+
+/* Final message text */
+.final-msg{
+  margin-top:10px;
+  font-family:"Playfair Display",serif;
+  font-size:17px;
+  line-height:1.6;
+  white-space:pre-line;
+}
+
+/* textarea */
+textarea{
+  width:100%;
+  margin-top:10px;
+  min-height:90px;
+  border-radius:12px;
+  background:rgba(3,7,18,0.9);
+  border:1px solid rgba(148,163,184,0.7);
+  padding:8px 10px;
+  color:#e5e7eb;
+  font-family:"Poppins",sans-serif;
+  font-size:14px;
+  resize:vertical;
+}
+
+/* 🌙 End screen */
+.end-screen{
+  position:fixed;
+  inset:0;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  background:radial-gradient(circle at top,#e5e7eb,#020617);
+  color:#020617;
+  animation:endShift 14s ease-in-out infinite;
+}
+@keyframes endShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.end-text{
+  font-family:"Playfair Display",serif;
+  font-size:20px;
+  text-align:center;
+  color:#020617;
+  padding:0 32px;
+}
+.end-moon-emoji{
+  font-size:32px;
+  margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- INTRO -->
+  <div id="intro">
+    <div class="intro-title">Hi, <span id="herName">Rosh</span> 👋</div>
+    <div class="intro-sub">I made you a tiny heart matrix.</div>
+    <div class="intro-sub">Tap around, unlock hearts, no pressure 💫</div>
+    <button class="btn" id="startBtn">Enter</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game" class="hidden">
+    <div class="meter">
+      Hearts: <span id="pct">0</span>%
+      <div class="meter-bar"><div id="fill" class="meter-fill"></div></div>
+    </div>
+    <div id="grid" class="grid"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modalBG" class="modal-bg hidden" style="display:none;">
+  <div class="modal">
+    <div id="mTitle" class="modal-title"></div>
+    <div id="mText" class="modal-text"></div>
+    <div id="mDynamic" style="margin-top:10px;"></div>
+    <button class="btn-secondary" id="closeModal">Close</button>
+  </div>
+</div>
+
+<!-- 🌙 FINAL END SCREEN AFTER NOTE -->
+<div id="endScreen" class="end-screen">
+  <div class="end-moon-emoji">🌙</div>
+  <div class="end-text">
+    Somewhere on my little moon, it’s still just you and me.
+  </div>
+</div>
+
+<script>
+/* ========= SIMPLE CONFIG ========= */
+const HER = "Rosh";
+const ME  = "Yours"; // your name
+
+document.getElementById("herName").textContent = HER;
+
+/* ========= BACKEND LOGGING (calls Netlify function) ========= */
+const sessionID = Math.random().toString(36).slice(2,10);
+
+async function logChoice(tileKey,value){
+  console.log("[HeartMatrix]", sessionID, tileKey, value);
+  try{
+    await fetch("/.netlify/functions/save-response",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({session:sessionID,key:tileKey,value})
+    });
+  }catch(e){
+    console.log("log error", e);
+  }
+}
+
+/* ========= TILES ========= */
+const tiles = [
+  {id:1,key:"M1",type:"memory",hearts:6,
+   title:"Do you remember this?",
+   text:"That time we were just chatting and ended up laughing at something tiny and stupid. I still remember it for no real reason."},
+
+  {id:2,key:"C1",type:"choice",hearts:8,
+   q:"What am I to you?",
+   opts:["Chaos friend","One of my fav people","My idiot"],
+   a:"From my side, you're genuinely one of my favorite people 💗"},
+
+  {id:3,key:"M2",type:"memory",hearts:6,
+   title:"The way you explain things",
+   text:"You have this mix of chaos + logic when you explain stuff. It's like your brain is buffering out loud and somehow it's still adorable."},
+
+  {id:4,key:"L1",type:"lockedNote",hearts:6,unlock:30,
+   title:"Little things",
+   text:"You’ve already opened more of this than I expected. I actually notice the little things you do. They mean more to me than you think."},
+
+  {id:5,key:"T2",type:"pick3",hearts:10,
+   q:"Pick 3 you think fit you:",
+   opts:["Your laugh","Your brain","Your weirdness","Your kindness","Your energy","Your existence"],
+   a:"Real answer: it’s all of them, you’re very easy to care about."},
+
+  {id:6,key:"C2",type:"choice",hearts:8,
+   q:"How do you see us?",
+   opts:["Two idiots surviving","Comfort zone","Accidentally important"],
+   a:"I like the 'accidentally important' version a lot 🙂"},
+
+  {id:7,key:"T3",type:"slider",hearts:10,
+   q:"How much effort do I want to put into staying in your life?",
+   a:"Honestly? I’d really like you to stay. No rush, no pressure."},
+
+  {id:8,key:"L2",type:"lockedNote",hearts:6,unlock:60,
+   title:"Safe place",
+   text:"Sometimes I replay our conversations in my head, not to overthink but because they make me feel lighter. You’re one of my safe places."},
+
+  {id:9,key:"M3",type:"memory",hearts:6,
+   title:"Little superpower",
+   text:"I don’t think you realise how comforting you are. Some days felt less heavy just because I got to talk to you."},
+
+  {id:10,key:"T4",type:"stars",hearts:10,
+   q:"Tap the stars you think you are:",
+   opts:["kind","funny","smart","irreplaceable"],
+   a:"Plot twist: you’re all of them — especially ‘irreplaceable’."},
+
+  {id:11,key:"M4",type:"memory",hearts:6,
+   title:"Selfish wish",
+   text:"I secretly hope that years from now I’m still randomly sending you dumb stuff and you’re still replying with even dumber things."},
+
+  {id:12,key:"L3",type:"lockedNote",hearts:6,unlock:80,
+   title:"Thankful",
+   text:"I don’t say this out loud often: I’m really, genuinely thankful that you exist exactly the way you are, right now, in my life."},
+
+  {id:13,key:"M5",type:"memory",hearts:6,
+   title:"Tiny detail",
+   text:"There are tiny details about you stuck in my head for no reason. I think that’s how my brain files people it really cares about."},
+
+  {id:14,key:"C4",type:"choice",hearts:12,
+   q:"How glad am I that we met?",
+   opts:["7/10","Low-key one of the best","Who even are you"],
+   a:"You’re honestly one of the best things that happened to me 🫶"},
+
+  {id:15,key:"M6",type:"memory",hearts:6,
+   title:"Reality check",
+   text:"You have no idea how much brighter some days got just because your name popped up on my screen."},
+
+  {id:16,key:"F",type:"final",hearts:0,unlock:0}
+];
+
+let hearts = 0;
+const totalHearts = tiles.reduce((s,t)=>s+(t.hearts||0),0);
+
+function percent(){ return Math.min(100,Math.round((hearts/totalHearts)*100)); }
+function updateMeter(){
+  const p = percent();
+  document.getElementById("pct").textContent = p;
+  document.getElementById("fill").style.width = p + "%";
+  tiles.forEach(t=>{
+    if(t.type==="lockedNote" && t.el){
+      if(p >= (t.unlock||0)) t.el.classList.remove("locked");
+      else t.el.classList.add("locked");
+    }
+  });
+}
+
+/* ========= RENDER GRID ========= */
+const grid=document.getElementById("grid");
+tiles.forEach(t=>{
+  const div=document.createElement("div");
+  t.el = div;
+  div.className="tile";
+  if(t.type==="lockedNote") div.classList.add("locked");
+  if(t.type==="F") div.dataset.final="1";
+  const span=document.createElement("span");
+  span.textContent = (t.type==="F" ? "💌" : "💗");
+  div.appendChild(span);
+  div.addEventListener("click",()=>openTile(t));
+  grid.appendChild(div);
+});
+
+/* ========= MODAL + END SCREEN HELPERS ========= */
+const modalBG=document.getElementById("modalBG");
+const mTitle=document.getElementById("mTitle");
+const mText=document.getElementById("mText");
+const mDynamic=document.getElementById("mDynamic");
+const closeBtn=document.getElementById("closeModal");
+const endScreen=document.getElementById("endScreen");
+const app=document.querySelector(".app");
+let mode="";
+
+function openModal(title,text){
+  mTitle.textContent=title;
+  mText.textContent=text;
+  mDynamic.innerHTML="";
+  modalBG.style.display="flex";
+  modalBG.classList.remove("hidden");
+}
+function hideModal(){
+  modalBG.classList.add("hidden");
+  modalBG.style.display="none";
+}
+closeBtn.onclick=()=>{
+  if(mode==="final") openNoteModal();
+  else hideModal();
+};
+
+function showEndScreen(){
+  hideModal();
+  app.classList.add("hidden");
+  endScreen.style.display="flex";
+}
+
+/* ========= TILE ROUTING ========= */
+function markOpened(t){
+  if(t.el) t.el.classList.add("opened");
+}
+
+function openTile(t){
+  if(t.type==="final"){
+    markOpened(t);
+    openFinalTile();
+    return;
+  }
+  markOpened(t);
+
+  if(t.type==="memory") return openMemoryTile(t);
+  if(t.type==="choice") return openChoiceTile(t);
+  if(t.type==="pick3") return openPick3Tile(t);
+  if(t.type==="slider") return openSliderTile(t);
+  if(t.type==="stars") return openStarsTile(t);
+  if(t.type==="lockedNote") return openLockedTile(t);
+}
+
+/* Memory tiles */
+function openMemoryTile(t){
+  openModal(t.title,t.text);
+  mode="";
+  hearts+=t.hearts; updateMeter();
+}
+
+/* Locked notes */
+function openLockedTile(t){
+  if(percent() < (t.unlock||0)){
+    openModal("Locked","Open a few more tiles first 💫");
+    mode="";
+    return;
+  }
+  openModal(t.title,t.text);
+  mode="";
+  hearts+=t.hearts; updateMeter();
+}
+
+/* Choice tiles – logged */
+function openChoiceTile(t){
+  openModal(t.q,"");
+  mode="";
+  t.opts.forEach(opt=>{
+    const b=document.createElement("button");
+    b.className="btn-option";
+    b.style.display="block";
+    b.textContent=opt;
+    b.onclick=()=>{
+      hearts+=t.hearts; updateMeter();
+      logChoice(t.key,opt);
+      openModal(t.q,t.a);
+    };
+    mDynamic.appendChild(b);
+  });
+}
+
+/* Pick3 – logged */
+function openPick3Tile(t){
+  openModal(t.q,"Pick any 3.");
+  mode="";
+  const picked=[];
+  t.opts.forEach(opt=>{
+    const b=document.createElement("button");
+    b.className="btn-option";
+    b.style.marginRight="6px";
+    b.textContent=opt;
+    b.onclick=()=>{
+      if(picked.includes(opt) || picked.length>=3) return;
+      picked.push(opt);
+      b.style.opacity=0.7;
+      if(picked.length===3){
+        hearts+=t.hearts; updateMeter();
+        logChoice(t.key,picked.join(", "));
+        openModal(t.q,t.a);
+      }
+    };
+    mDynamic.appendChild(b);
+  });
+}
+
+/* Slider – logged */
+function openSliderTile(t){
+  openModal(t.q,"");
+  mode="";
+  const r=document.createElement("input");
+  r.type="range";r.min=0;r.max=100;r.value=10;r.style.width="100%";
+
+  const label=document.createElement("div");
+  label.style.marginTop="8px";
+  label.style.fontSize="13px";
+  label.style.opacity="0.9";
+  label.textContent="meh";
+
+  let done=false;
+  r.oninput=()=>{
+    const v=+r.value;
+    if(v<30) label.textContent="meh";
+    else if(v<70) label.textContent="okay I guess";
+    else label.textContent="I actually care";
+
+    if(v>80 && !done){
+      done=true;
+      r.value=100;
+      hearts+=t.hearts; updateMeter();
+      logChoice(t.key,label.textContent);
+      openModal(t.q,t.a);
+    }
+  };
+  mDynamic.appendChild(r);
+  mDynamic.appendChild(label);
+}
+
+/* Stars – logged */
+function openStarsTile(t){
+  openModal(t.q,"Tap as many as you feel.");
+  mode="";
+  const picked=[];
+  t.opts.forEach(opt=>{
+    const b=document.createElement("button");
+    b.className="btn-option";
+    b.style.marginRight="6px";
+    b.textContent="⭐ "+opt;
+    b.onclick=()=>{
+      if(!picked.includes(opt)) picked.push(opt);
+      hearts+=t.hearts; updateMeter();
+      logChoice(t.key,picked.join(", "));
+      openModal(t.q,t.a);
+    };
+    mDynamic.appendChild(b);
+  });
+}
+
+/* Final tile – long message */
+function openFinalTile(){
+  mode="final";
+  const msg = (
+`I could’ve just sent you a normal text,
+but that wouldn’t really feel like you.
+
+You’re a little extra, a little chaotic, and a lot special,
+so I wanted something a bit extra too.
+
+All of this was just my way of saying one thing:
+I care about you. More than I probably show.
+
+I’m not asking for anything, not trying to put pressure on you.
+I just wanted you to know that you’re not “just a friend” to me —
+you’re one of the most important people I have.
+
+– ${ME}`
+  );
+  openModal("The real reason I made this","");
+  const div=document.createElement("div");
+  div.className="final-msg";
+  div.textContent=msg;
+  mDynamic.appendChild(div);
+}
+
+/* After final – note modal, then end screen */
+function openNoteModal(){
+  openModal("One last tiny request…","Say something honest about us 🫶");
+  mode="note";
+  const ta=document.createElement("textarea");
+  ta.placeholder="No pressure — just whatever you feel.";
+  mDynamic.appendChild(ta);
+  const send=document.createElement("button");
+  send.className="btn";
+  send.textContent="Send";
+  send.style.marginTop="8px";
+  send.onclick=()=>{
+    const txt=ta.value.trim();
+    if(!txt) return;
+    logChoice("NOTE",txt);
+    showEndScreen();
+  };
+  mDynamic.appendChild(send);
+}
+
+/* Start button */
+document.getElementById("startBtn").onclick=()=>{
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+};
+updateMeter();
+</script>
+
+</body>
+</html>
