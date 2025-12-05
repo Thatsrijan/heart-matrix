@@ -1,7 +1,12 @@
 // netlify/functions/save-response.js
-// Email-only logger using Resend (no database)
+// Email-only logger using Resend SDK (Node.js)
 
-const https = require("https");
+const { Resend } = require("resend");
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const TO_EMAIL = process.env.TO_EMAIL;
+
+const resend = new Resend(RESEND_API_KEY);
 
 function parseUA(ua = "") {
   let device = "Unknown device";
@@ -25,53 +30,7 @@ function parseUA(ua = "") {
   return { device, os, browser };
 }
 
-function sendResendEmail({ apiKey, to, subject, text }) {
-  const payload = JSON.stringify({
-    from: "Heart Matrix <onboarding@resend.dev>",
-    to: [to],
-    subject,
-    text,
-  });
-
-  const options = {
-    hostname: "api.resend.com",
-    path: "/emails",
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "Content-Length": Buffer.byteLength(payload),
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let body = "";
-      res.on("data", (chunk) => (body += chunk));
-      res.on("end", () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(body);
-        } else {
-          console.error("Resend error:", res.statusCode, body);
-          reject(new Error(`Resend error ${res.statusCode}: ${body}`));
-        }
-      });
-    });
-
-    req.on("error", (err) => {
-      console.error("HTTPS error:", err);
-      reject(err);
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
-
 exports.handler = async (event) => {
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  const TO_EMAIL = process.env.TO_EMAIL;
-
   if (!RESEND_API_KEY || !TO_EMAIL) {
     console.error("Missing RESEND_API_KEY or TO_EMAIL env vars");
     return {
@@ -80,19 +39,32 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET = test email
+  // 🔍 GET = simple test endpoint
   if (event.httpMethod === "GET") {
     try {
-      await sendResendEmail({
-        apiKey: RESEND_API_KEY,
-        to: TO_EMAIL,
+      const { data, error } = await resend.emails.send({
+        from: "Heart Matrix <onboarding@resend.dev>",
+        to: [TO_EMAIL],
         subject: "Heart Matrix test email ✅",
-        text: "If you received this, Resend + Netlify are wired correctly.",
+        html: "<p>If you see this, Netlify + Resend are wired correctly.</p>",
       });
-      return { statusCode: 200, body: "Test email sent" };
+
+      if (error) {
+        console.error("Resend test error:", error);
+        return {
+          statusCode: 500,
+          body: "Resend error: " + JSON.stringify(error),
+        };
+      }
+
+      console.log("Resend test data:", data);
+      return {
+        statusCode: 200,
+        body: "Test email sent: " + JSON.stringify(data),
+      };
     } catch (err) {
       console.error("Test email failed:", err);
-      return { statusCode: 500, body: "Failed to send test email" };
+      return { statusCode: 500, body: "Failed: " + String(err) };
     }
   }
 
@@ -127,16 +99,25 @@ Browser: ${browser}
 Time: ${time}
     `.trim();
 
-    await sendResendEmail({
-      apiKey: RESEND_API_KEY,
-      to: TO_EMAIL,
+    const { data, error } = await resend.emails.send({
+      from: "Heart Matrix <onboarding@resend.dev>",
+      to: [TO_EMAIL],
       subject: `Heart Matrix - ${key}`,
       text,
     });
 
+    if (error) {
+      console.error("Resend send error:", error);
+      return {
+        statusCode: 500,
+        body: "Resend error: " + JSON.stringify(error),
+      };
+    }
+
+    console.log("Resend send data:", data);
     return { statusCode: 200, body: "OK" };
   } catch (err) {
     console.error("save-response error:", err);
-    return { statusCode: 500, body: "ERR" };
+    return { statusCode: 500, body: "ERR: " + String(err) };
   }
 };
