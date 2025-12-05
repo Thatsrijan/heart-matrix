@@ -15,6 +15,11 @@
   --close-bg:#111827;
 }
 
+/* lock body scroll when modal open */
+body.modal-open{
+  overflow:hidden;
+}
+
 /* 🌈 Dynamic background: gold, silver, black */
 body{
   margin:0;
@@ -233,7 +238,7 @@ body{
   box-shadow:0 22px 50px rgba(0,0,0,0.75);
   padding:18px;
   animation:modalIn 0.4s cubic-bezier(0.22,1,0.36,1);
-  max-height:85vh;
+  max-height:90vh;
   display:flex;
   flex-direction:column;
 }
@@ -251,12 +256,13 @@ body{
   margin-top:6px;
 }
 
-/* scrollable content */
+/* scrollable content (one scrollbar only, no horizontal) */
 .modal-text,
 .final-msg,
 #mDynamic{
   overflow-y:auto;
-  max-height:55vh;
+  overflow-x:hidden;
+  max-height:60vh;
   padding-right:6px;
 }
 .modal-text::-webkit-scrollbar,
@@ -369,7 +375,7 @@ textarea{
 <script>
 /* ========= SIMPLE CONFIG ========= */
 const HER = "Rosh";
-const ME  = "Yours"; // your name
+const ME  = "Yours"; // your name in final msg
 
 document.getElementById("herName").textContent = HER;
 
@@ -506,10 +512,12 @@ function openModal(title,text){
   mDynamic.innerHTML="";
   modalBG.style.display="flex";
   modalBG.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 }
 function hideModal(){
   modalBG.classList.add("hidden");
   modalBG.style.display="none";
+  document.body.classList.remove("modal-open");
 }
 closeBtn.onclick=()=>{
   if(mode==="final") openNoteModal();
